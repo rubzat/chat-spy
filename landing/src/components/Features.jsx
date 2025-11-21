@@ -11,7 +11,7 @@ const iconMap = [
 
 const Features = ({ t }) => {
     return (
-        <section className="section-padding" style={{ background: 'var(--bg-secondary)' }}>
+        <section id="features" className="section-padding" style={{ background: 'var(--bg-secondary)' }}>
             <div className="container">
                 <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
                     <h2 style={{ fontSize: '2.5rem', fontWeight: '700', marginBottom: '1rem' }}>{t.title} <span className="gradient-text">Chat Spy</span>?</h2>

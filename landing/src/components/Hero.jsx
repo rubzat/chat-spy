@@ -28,12 +28,16 @@ const Hero = ({ t }) => {
                     </p>
 
                     <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
-                        <button className="btn-primary" style={{ fontSize: '1.125rem', padding: '1rem 2.5rem' }}>
-                            {t.ctaPrimary}
-                        </button>
-                        <button style={{ background: 'transparent', border: '1px solid var(--text-secondary)', color: 'var(--text-primary)', padding: '1rem 2.5rem', borderRadius: '9999px', fontSize: '1.125rem', fontWeight: '600' }}>
-                            {t.ctaSecondary}
-                        </button>
+                        <a href="https://chat-spy-xmh4.vercel.app/" target="_blank" rel="noopener noreferrer">
+                            <button className="btn-primary" style={{ fontSize: '1.125rem', padding: '1rem 2.5rem' }}>
+                                {t.ctaPrimary}
+                            </button>
+                        </a>
+                        <a href="#features" style={{ textDecoration: 'none' }}>
+                            <button style={{ background: 'transparent', border: '1px solid var(--text-secondary)', color: 'var(--text-primary)', padding: '1rem 2.5rem', borderRadius: '9999px', fontSize: '1.125rem', fontWeight: '600' }}>
+                                {t.ctaSecondary}
+                            </button>
+                        </a>
                     </div>
                 </motion.div>
             </div>
