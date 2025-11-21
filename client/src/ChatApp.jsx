@@ -5,7 +5,7 @@ import { Send, Shield, Copy, Check, PhoneIncoming, Phone, X, Loader2, LogOut } f
 import { motion, AnimatePresence } from 'framer-motion';
 
 // Connect to backend
-const socket = io('http://localhost:3001');
+const socket = io('https://chat-spy.onrender.com');
 
 export default function ChatApp() {
     const [view, setView] = useState('IDLE'); // IDLE, REQUESTING, INCOMING, CHAT
@@ -290,8 +290,8 @@ export default function ChatApp() {
                                 >
                                     <div
                                         className={`max-w-[80%] p-4 rounded-2xl border ${msg.type === 'sent'
-                                                ? 'bg-emerald-500/20 border-emerald-500/30 text-white rounded-tr-sm'
-                                                : 'bg-slate-800/80 border-slate-700 text-white rounded-tl-sm'
+                                            ? 'bg-emerald-500/20 border-emerald-500/30 text-white rounded-tr-sm'
+                                            : 'bg-slate-800/80 border-slate-700 text-white rounded-tl-sm'
                                             }`}
                                     >
                                         <p className="text-base leading-relaxed break-words font-medium">{msg.content}</p>
