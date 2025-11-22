@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import io from 'socket.io-client';
-import { Send, Shield, Copy, Check, PhoneIncoming, Phone, X, Loader2, LogOut } from 'lucide-react';
+import { Send, Shield, Copy, Check, PhoneIncoming, MessageCircle, X, Loader2, LogOut } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // Connect to backend
@@ -237,8 +237,8 @@ export default function ChatApp() {
                                 type="submit"
                                 className="w-full py-4 bg-emerald-600 hover:bg-emerald-500 rounded-xl font-bold tracking-wider transition-all shadow-lg shadow-emerald-900/20 flex items-center justify-center gap-2"
                             >
-                                <Phone size={20} />
-                                INICIAR ENLACE
+                                <MessageCircle size={20} />
+                                INICIAR CHAT
                             </button>
                         </form>
 
@@ -278,9 +278,9 @@ export default function ChatApp() {
                                                                 setShowContacts(false);
                                                             }}
                                                             className="p-2 bg-emerald-600 hover:bg-emerald-500 rounded-lg transition-colors"
-                                                            title="Conectar"
+                                                            title="Enviar Mensaje"
                                                         >
-                                                            <Phone size={16} />
+                                                            <MessageCircle size={16} />
                                                         </button>
                                                         <button
                                                             onClick={() => deleteContact(contact.pin)}
@@ -346,7 +346,7 @@ export default function ChatApp() {
                                 onClick={acceptChat}
                                 className="py-3 bg-emerald-600 hover:bg-emerald-500 rounded-xl font-bold transition-colors shadow-lg shadow-emerald-900/20 flex items-center justify-center gap-2"
                             >
-                                <Phone size={18} /> Aceptar
+                                <MessageCircle size={18} /> Aceptar
                             </button>
                         </div>
                     </div>
