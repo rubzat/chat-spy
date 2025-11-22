@@ -19,8 +19,8 @@ export default function ChatView({ chat, onSendMessage, onCloseChat, onSaveConta
 
     return (
         <div className="flex-1 flex flex-col bg-slate-900/30">
-            {/* Chat Header */}
-            <div className="flex items-center justify-between px-4 py-3 border-b border-white/5 bg-slate-900/50">
+            {/* Chat Header - Desktop Only (Mobile has separate header) */}
+            <div className="hidden md:flex items-center justify-between px-4 py-3 border-b border-white/5 bg-slate-900/50">
                 <div className="flex items-center gap-3">
                     <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
                     <div>
@@ -49,7 +49,7 @@ export default function ChatView({ chat, onSendMessage, onCloseChat, onSaveConta
             </div>
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            <div className="flex-1 overflow-y-auto p-3 md:p-4 space-y-3 md:space-y-4">
                 <AnimatePresence>
                     {chat.messages.map((msg) => {
                         const isSent = msg.sender === chat.myPin || msg.type === 'sent';
@@ -62,12 +62,12 @@ export default function ChatView({ chat, onSendMessage, onCloseChat, onSaveConta
                                 className={`flex ${isSent ? 'justify-end' : 'justify-start'}`}
                             >
                                 <div
-                                    className={`max-w-[70%] px-4 py-2 rounded-2xl ${isSent
+                                    className={`max-w-[85%] md:max-w-[70%] px-3 md:px-4 py-2 md:py-3 rounded-2xl ${isSent
                                             ? 'bg-emerald-600 text-white rounded-br-sm'
                                             : 'bg-slate-700 text-white rounded-bl-sm'
                                         }`}
                                 >
-                                    <p className="break-words">{msg.text}</p>
+                                    <p className="break-words text-sm md:text-base">{msg.text}</p>
                                     <span className="text-xs opacity-70 mt-1 block">
                                         {new Date(msg.timestamp).toLocaleTimeString('es-ES', {
                                             hour: '2-digit',
@@ -83,22 +83,23 @@ export default function ChatView({ chat, onSendMessage, onCloseChat, onSaveConta
             </div>
 
             {/* Input */}
-            <form onSubmit={handleSend} className="p-4 border-t border-white/5 bg-slate-900/50">
+            <form onSubmit={handleSend} className="p-3 md:p-4 border-t border-white/5 bg-slate-900/50">
                 <div className="flex gap-2">
                     <input
                         type="text"
                         value={message}
                         onChange={(e) => setMessage(e.target.value)}
                         placeholder="Escribe un mensaje..."
-                        className="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all outline-none"
+                        className="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-3 md:px-4 py-3 md:py-4 text-sm md:text-base focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all outline-none"
                         maxLength={500}
                     />
                     <button
                         type="submit"
                         disabled={!message.trim()}
-                        className="px-6 py-3 bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-700 disabled:cursor-not-allowed rounded-xl transition-colors flex items-center gap-2"
+                        className="px-4 md:px-6 py-3 md:py-4 bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-700 disabled:cursor-not-allowed rounded-xl transition-colors flex items-center gap-2"
                     >
-                        <Send size={18} />
+                        <Send size={18} className="md:hidden" />
+                        <Send size={20} className="hidden md:block" />
                     </button>
                 </div>
             </form>

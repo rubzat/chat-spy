@@ -1,19 +1,20 @@
 
 import React, { useState, useEffect } from 'react';
 import io from 'socket.io-client';
-import { Shield, Copy, Check, Share2, MessageCircle, PhoneIncoming, X } from 'lucide-react';
+import { Shield, Copy, Check, Share2, MessageCircle, PhoneIncoming, X, Menu, ArrowLeft } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ChatList from './components/ChatList';
 import ChatView from './components/ChatView';
 
 // Connect to backend
-const socket = io('https://chat-spy.onrender.com');
+const socket = io('http://localhost:3001');
 
 export default function ChatApp() {
     const [myPin, setMyPin] = useState(null);
     const [chats, setChats] = useState([]); // Array of { roomId, withPin, messages[], myPin }
     const [activeRoomId, setActiveRoomId] = useState(null);
     const [view, setView] = useState('LIST'); // LIST, NEW_CHAT, INCOMING_REQUEST
+    const [showMobileMenu, setShowMobileMenu] = useState(false); // Mobile sidebar toggle
 
     // New chat state
     const [targetPin, setTargetPin] = useState('');
@@ -297,39 +298,95 @@ export default function ChatApp() {
             </AnimatePresence>
 
             {/* Main Content */}
-            <div className="flex-1 flex overflow-hidden">
-                {/* Chat List Sidebar */}
-                <ChatList
-                    chats={chats}
-                    activeRoomId={activeRoomId}
-                    onSelectChat={handleSelectChat}
-                    onCloseChat={handleCloseChat}
-                    onNewChat={handleNewChat}
-                    savedContacts={savedContacts}
-                />
+            <div className="flex-1 flex overflow-hidden relative">
+                {/* Mobile Menu Overlay */}
+                {showMobileMenu && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 bg-black/50 z-40 md:hidden"
+                        onClick={() => setShowMobileMenu(false)}
+                    />
+                )}
+
+                {/* Chat List Sidebar - Mobile Drawer / Desktop Fixed */}
+                <motion.div
+                    initial={false}
+                    animate={{
+                        x: showMobileMenu || window.innerWidth >= 768 ? 0 : -320
+                    }}
+                    className="fixed md:relative z-50 md:z-auto h-full"
+                >
+                    <ChatList
+                        chats={chats}
+                        activeRoomId={activeRoomId}
+                        onSelectChat={(roomId) => {
+                            handleSelectChat(roomId);
+                            setShowMobileMenu(false);
+                        }}
+                        onCloseChat={handleCloseChat}
+                        onNewChat={() => {
+                            handleNewChat();
+                            setShowMobileMenu(false);
+                        }}
+                        savedContacts={savedContacts}
+                    />
+                </motion.div>
 
                 {/* Main View */}
                 <div className="flex-1 flex flex-col">
+                    {/* Mobile Header - Show when chat is active */}
+                    {activeChat && (
+                        <div className="md:hidden flex items-center gap-3 p-4 bg-slate-900/50 border-b border-slate-700">
+                            <button
+                                onClick={() => {
+                                    setActiveRoomId(null);
+                                    setShowMobileMenu(true);
+                                }}
+                                className="p-2 hover:bg-white/10 rounded-lg"
+                            >
+                                <ArrowLeft size={20} />
+                            </button>
+                            <div className="flex-1">
+                                <div className="font-medium">PIN: {activeChat.withPin}</div>
+                                <div className="text-xs text-slate-400">{activeChat.messages.length} mensajes</div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Hamburger Menu Button - Mobile Only */}
+                    {!activeChat && view === 'LIST' && (
+                        <div className="md:hidden p-4">
+                            <button
+                                onClick={() => setShowMobileMenu(!showMobileMenu)}
+                                className="p-3 bg-emerald-600 hover:bg-emerald-500 rounded-lg"
+                            >
+                                <Menu size={24} />
+                            </button>
+                        </div>
+                    )}
+
                     {view === 'NEW_CHAT' && (
                         <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
-                            className="flex-1 flex flex-col justify-center items-center p-8"
+                            className="flex-1 flex flex-col justify-center items-center p-4 md:p-8"
                         >
                             <div className="w-full max-w-md">
-                                <h2 className="text-2xl font-bold mb-6 text-center">Nuevo Chat</h2>
+                                <h2 className="text-xl md:text-2xl font-bold mb-6 text-center">Nuevo Chat</h2>
                                 <form onSubmit={handleRequestChat} className="space-y-4">
                                     <input
                                         type="text"
                                         placeholder="000000"
                                         value={targetPin}
                                         onChange={(e) => setTargetPin(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                                        className="w-full bg-slate-900/50 border border-slate-700 rounded-xl p-4 text-center text-3xl tracking-[0.5em] font-mono focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all outline-none"
+                                        className="w-full bg-slate-900/50 border border-slate-700 rounded-xl p-4 md:p-6 text-center text-2xl md:text-3xl tracking-[0.5em] font-mono focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all outline-none"
                                         autoFocus
                                     />
                                     <button
                                         type="submit"
-                                        className="w-full py-4 bg-emerald-600 hover:bg-emerald-500 rounded-xl font-bold transition-all flex items-center justify-center gap-2"
+                                        className="w-full py-4 md:py-5 bg-emerald-600 hover:bg-emerald-500 rounded-xl font-bold text-base md:text-lg transition-all flex items-center justify-center gap-2"
                                     >
                                         <MessageCircle size={20} />
                                         INICIAR CHAT
@@ -337,7 +394,7 @@ export default function ChatApp() {
                                     <button
                                         type="button"
                                         onClick={() => setView('LIST')}
-                                        className="w-full py-3 bg-slate-700 hover:bg-slate-600 rounded-xl font-medium transition-all"
+                                        className="w-full py-3 md:py-4 bg-slate-700 hover:bg-slate-600 rounded-xl font-medium transition-all"
                                     >
                                         Cancelar
                                     </button>
@@ -367,11 +424,11 @@ export default function ChatApp() {
                                                             key={contact.pin}
                                                             className="bg-slate-800/50 border border-slate-700 rounded-lg p-3 flex items-center justify-between"
                                                         >
-                                                            <div className="flex-1">
-                                                                <div className="font-medium text-sm">{contact.name}</div>
+                                                            <div className="flex-1 min-w-0">
+                                                                <div className="font-medium text-sm truncate">{contact.name}</div>
                                                                 <div className="font-mono text-xs text-slate-400">{contact.pin}</div>
                                                             </div>
-                                                            <div className="flex gap-2">
+                                                            <div className="flex gap-2 flex-shrink-0">
                                                                 <button
                                                                     onClick={() => {
                                                                         setTargetPin(contact.pin);
@@ -403,21 +460,22 @@ export default function ChatApp() {
                         <motion.div
                             initial={{ opacity: 0, scale: 0.9 }}
                             animate={{ opacity: 1, scale: 1 }}
-                            className="flex-1 flex flex-col justify-center items-center p-8"
+                            className="flex-1 flex flex-col justify-center items-center p-4 md:p-8"
                         >
-                            <PhoneIncoming size={64} className="text-emerald-400 mb-4 animate-pulse" />
-                            <h2 className="text-2xl font-bold mb-2">Solicitud de Chat</h2>
-                            <p className="text-slate-400 mb-6">PIN: <span className="font-mono text-white text-xl">{incomingPin}</span></p>
-                            <div className="flex gap-4">
+                            <PhoneIncoming size={48} className="md:hidden text-emerald-400 mb-4 animate-pulse" />
+                            <PhoneIncoming size={64} className="hidden md:block text-emerald-400 mb-4 animate-pulse" />
+                            <h2 className="text-xl md:text-2xl font-bold mb-2">Solicitud de Chat</h2>
+                            <p className="text-slate-400 mb-6">PIN: <span className="font-mono text-white text-lg md:text-xl">{incomingPin}</span></p>
+                            <div className="flex flex-col md:flex-row gap-3 md:gap-4 w-full max-w-sm">
                                 <button
                                     onClick={handleAcceptChat}
-                                    className="px-8 py-3 bg-emerald-600 hover:bg-emerald-500 rounded-xl font-bold transition-colors"
+                                    className="flex-1 px-6 md:px-8 py-4 bg-emerald-600 hover:bg-emerald-500 rounded-xl font-bold transition-colors"
                                 >
                                     Aceptar
                                 </button>
                                 <button
                                     onClick={handleRejectChat}
-                                    className="px-8 py-3 bg-red-600 hover:bg-red-500 rounded-xl font-bold transition-colors"
+                                    className="flex-1 px-6 md:px-8 py-4 bg-red-600 hover:bg-red-500 rounded-xl font-bold transition-colors"
                                 >
                                     Rechazar
                                 </button>
@@ -436,17 +494,19 @@ export default function ChatApp() {
                     )}
 
                     {view === 'LIST' && !activeChat && chats.length === 0 && (
-                        <div className="flex-1 flex flex-col justify-center items-center text-slate-400">
-                            <MessageCircle size={64} className="mb-4 opacity-30" />
-                            <p className="text-lg">No hay conversaciones activas</p>
+                        <div className="flex-1 flex flex-col justify-center items-center text-slate-400 p-4">
+                            <MessageCircle size={48} className="md:hidden mb-4 opacity-30" />
+                            <MessageCircle size={64} className="hidden md:block mb-4 opacity-30" />
+                            <p className="text-base md:text-lg">No hay conversaciones activas</p>
                             <p className="text-sm mt-2">Inicia un nuevo chat para comenzar</p>
                         </div>
                     )}
 
                     {view === 'LIST' && !activeChat && chats.length > 0 && (
-                        <div className="flex-1 flex flex-col justify-center items-center text-slate-400">
-                            <MessageCircle size={64} className="mb-4 opacity-30" />
-                            <p className="text-lg">Selecciona una conversación</p>
+                        <div className="flex-1 flex flex-col justify-center items-center text-slate-400 p-4">
+                            <MessageCircle size={48} className="md:hidden mb-4 opacity-30" />
+                            <MessageCircle size={64} className="hidden md:block mb-4 opacity-30" />
+                            <p className="text-base md:text-lg">Selecciona una conversación</p>
                         </div>
                     )}
                 </div>
