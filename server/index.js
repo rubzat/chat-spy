@@ -206,6 +206,34 @@ io.on('connection', (socket) => {
     }, 60000);
   });
 
+  // --- Clear Messages ---
+  socket.on('clear_messages', (roomId) => {
+    const room = rooms[roomId];
+    if (!room) return;
+
+    const myPin = socketToPin[socket.id];
+    if (!room.participants.includes(myPin)) return;
+
+    // Clear messages in room
+    room.messages = [];
+
+    // Notify both participants
+    room.participants.forEach(pin => {
+      const socketId = pinToSocket[pin];
+      if (socketId) {
+        io.to(socketId).emit('messages_cleared', { roomId });
+      }
+    });
+
+    console.log(`Messages cleared in room ${roomId}`);
+  });
+
+  // --- Check PIN Status ---
+  socket.on('check_pin_status', (targetPin) => {
+    const isOnline = !!pinToSocket[targetPin];
+    socket.emit('pin_status', { pin: targetPin, online: isOnline });
+  });
+
   // --- Close Chat ---
   socket.on('close_chat', (roomId) => {
     const room = rooms[roomId];

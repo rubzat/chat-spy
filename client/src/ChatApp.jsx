@@ -26,6 +26,7 @@ export default function ChatApp() {
     const [copied, setCopied] = useState(false);
     const [savedContacts, setSavedContacts] = useState([]);
     const [showContacts, setShowContacts] = useState(false);
+    const [pinStatuses, setPinStatuses] = useState({}); // { pin: online }
 
     // Load saved data on mount
     useEffect(() => {
@@ -141,6 +142,18 @@ export default function ChatApp() {
             setTimeout(() => setError(''), 3000);
         });
 
+        socket.on('messages_cleared', ({ roomId }) => {
+            setChats(prev => prev.map(chat =>
+                chat.roomId === roomId
+                    ? { ...chat, messages: [] }
+                    : chat
+            ));
+        });
+
+        socket.on('pin_status', ({ pin, online }) => {
+            setPinStatuses(prev => ({ ...prev, [pin]: online }));
+        });
+
         return () => {
             socket.off('pin_assigned');
             socket.off('incoming_request');
@@ -204,6 +217,17 @@ export default function ChatApp() {
     const handleNewChat = () => {
         setView('NEW_CHAT');
         setTargetPin('');
+    };
+
+    const handleClearMessages = (roomId) => {
+        // Clear messages locally
+        setChats(prev => prev.map(chat =>
+            chat.roomId === roomId
+                ? { ...chat, messages: [] }
+                : chat
+        ));
+        // Optionally emit to server to sync with other user
+        socket.emit('clear_messages', roomId);
     };
 
     // Contact management
@@ -529,6 +553,7 @@ export default function ChatApp() {
                             onCloseChat={handleCloseChat}
                             onSaveContact={saveContact}
                             isContactSaved={isContactSaved}
+                            onClearMessages={handleClearMessages}
                         />
                     )}
 

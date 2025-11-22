@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Send, Shield, LogOut, MessageCircle } from 'lucide-react';
+import { Send, Shield, LogOut, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-export default function ChatView({ chat, onSendMessage, onCloseChat, onSaveContact, isContactSaved }) {
+export default function ChatView({ chat, onSendMessage, onCloseChat, onSaveContact, isContactSaved, onClearMessages }) {
     const [message, setMessage] = useState('');
     const messagesEndRef = useRef(null);
 
@@ -13,6 +13,16 @@ export default function ChatView({ chat, onSendMessage, onCloseChat, onSaveConta
     const handleSend = (e) => {
         e.preventDefault();
         if (!message.trim()) return;
+
+        // Check for /eliminar command
+        if (message.trim() === '/eliminar') {
+            if (confirm('¿Eliminar todos los mensajes de este chat?')) {
+                onClearMessages(chat.roomId);
+            }
+            setMessage('');
+            return;
+        }
+
         onSendMessage(chat.roomId, message);
         setMessage('');
     };
@@ -63,8 +73,8 @@ export default function ChatView({ chat, onSendMessage, onCloseChat, onSaveConta
                             >
                                 <div
                                     className={`max-w-[85%] md:max-w-[70%] px-3 md:px-4 py-2 md:py-3 rounded-2xl ${isSent
-                                            ? 'bg-emerald-600 text-white rounded-br-sm'
-                                            : 'bg-slate-700 text-white rounded-bl-sm'
+                                        ? 'bg-emerald-600 text-white rounded-br-sm'
+                                        : 'bg-slate-700 text-white rounded-bl-sm'
                                         }`}
                                 >
                                     <p className="break-words text-sm md:text-base">{msg.text}</p>
