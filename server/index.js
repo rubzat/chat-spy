@@ -155,51 +155,48 @@ io.on('connection', (socket) => {
   });
 
   // --- Send Message ---
-  socket.on('send_message', ({ roomId, text }) => {
+  socket.on('send_message', ({ roomId, text, messageType = 'text' }) => {
     const room = rooms[roomId];
     if (!room) {
-      socket.emit('error', 'Chat no encontrado.');
+      socket.emit('error', 'Sala no encontrada.');
       return;
     }
 
-    const senderPin = socketToPin[socket.id];
-    if (!room.participants.includes(senderPin)) {
-      socket.emit('error', 'No eres parte de este chat.');
+    const myPin = socketToPin[socket.id];
+    if (!room.participants.includes(myPin)) {
+      socket.emit('error', 'No perteneces a esta sala.');
       return;
     }
 
-    const messageId = uuidv4();
     const message = {
-      id: messageId,
+      id: uuidv4(),
+      sender: myPin,
       text,
-      sender: senderPin,
+      messageType,
       timestamp: Date.now()
     };
 
     room.messages.push(message);
+    socket.emit('message_sent', { roomId, message });
 
-    // Send to both participants
-    room.participants.forEach(pin => {
-      const socketId = pinToSocket[pin];
-      if (socketId) {
-        if (socketId === socket.id) {
-          io.to(socketId).emit('message_sent', { roomId, message });
-        } else {
-          io.to(socketId).emit('receive_message', { roomId, message });
-        }
+    // Send to other participant
+    const otherPin = getOtherParticipant(roomId, myPin);
+    if (otherPin) {
+      const otherSocketId = pinToSocket[otherPin];
+      if (otherSocketId) {
+        io.to(otherSocketId).emit('receive_message', { roomId, message });
       }
-    });
+    }
 
     // Auto-delete after 60 seconds
     setTimeout(() => {
-      if (rooms[roomId]) {
-        rooms[roomId].messages = rooms[roomId].messages.filter(m => m.id !== messageId);
-
-        // Notify both participants
+      const idx = room.messages.findIndex(m => m.id === message.id);
+      if (idx !== -1) {
+        room.messages.splice(idx, 1);
         room.participants.forEach(pin => {
           const socketId = pinToSocket[pin];
           if (socketId) {
-            io.to(socketId).emit('message_expired', { roomId, messageId });
+            io.to(socketId).emit('message_expired', { roomId, messageId: message.id });
           }
         });
       }

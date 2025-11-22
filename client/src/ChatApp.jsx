@@ -200,8 +200,8 @@ export default function ChatApp() {
         setView('LIST');
     };
 
-    const handleSendMessage = (roomId, text) => {
-        socket.emit('send_message', { roomId, text });
+    const handleSendMessage = (roomId, text, messageType = 'text') => {
+        socket.emit('send_message', { roomId, text, messageType });
     };
 
     const handleCloseChat = (roomId) => {
