@@ -84,30 +84,18 @@ function cleanupRoom(roomId) {
 // --- Socket.IO Events ---
 
 io.on('connection', (socket) => {
-  console.log(`New connection: ${socket.id}`);
+  // Assign unique PIN automatically
+  let pin;
+  do {
+    pin = generatePin();
+  } while (pinToSocket[pin]);
 
-  // Listen for PIN request from client
-  socket.on('request_pin', (requestedPin) => {
-    let pin;
+  socketToPin[socket.id] = pin;
+  pinToSocket[pin] = socket.id;
+  userRooms[socket.id] = [];
 
-    // If client has a saved PIN and it's not currently in use, reuse it
-    if (requestedPin && /^\d{6}$/.test(requestedPin) && !pinToSocket[requestedPin]) {
-      pin = requestedPin;
-      console.log(`Reusing PIN ${pin} for ${socket.id}`);
-    } else {
-      // Generate new unique PIN
-      do {
-        pin = generatePin();
-      } while (pinToSocket[pin]);
-      console.log(`Assigned new PIN ${pin} to ${socket.id}`);
-    }
-
-    socketToPin[socket.id] = pin;
-    pinToSocket[pin] = socket.id;
-    userRooms[socket.id] = [];
-
-    socket.emit('pin_assigned', pin);
-  });
+  socket.emit('pin_assigned', pin);
+  console.log(`Assigned PIN ${pin} to ${socket.id}`);
 
   // --- Request Chat ---
   socket.on('request_chat', (targetPin) => {
