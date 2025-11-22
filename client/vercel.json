@@ -1,6 +1,16 @@
 {
     "buildCommand": "npm run build",
     "outputDirectory": "dist",
+    "rewrites": [
+        {
+            "source": "/:pin(\\d{6})",
+            "destination": "/index.html"
+        },
+        {
+            "source": "/(.*)",
+            "destination": "/index.html"
+        }
+    ],
     "installCommand": "npm install",
     "framework": "vite"
 }

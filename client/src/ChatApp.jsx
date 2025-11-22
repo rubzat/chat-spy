@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import io from 'socket.io-client';
-import { Send, Shield, Copy, Check, PhoneIncoming, MessageCircle, X, Loader2, LogOut } from 'lucide-react';
+import { Send, Shield, Copy, Check, PhoneIncoming, MessageCircle, X, Loader2, LogOut, Share2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // Connect to backend
@@ -34,6 +34,25 @@ export default function ChatApp() {
         const contacts = localStorage.getItem('chatSpyContacts');
         if (contacts) {
             setSavedContacts(JSON.parse(contacts));
+        }
+
+        // Check URL for PIN parameter (e.g., /123456 or ?pin=123456)
+        const path = window.location.pathname;
+        const urlParams = new URLSearchParams(window.location.search);
+
+        // Try path parameter first (e.g., /123456)
+        const pathPin = path.replace('/', '').trim();
+        if (pathPin && /^\d{6}$/.test(pathPin)) {
+            setTargetPin(pathPin);
+            console.log('PIN detectado en URL:', pathPin);
+        }
+        // Try query parameter (e.g., ?pin=123456)
+        else if (urlParams.has('pin')) {
+            const queryPin = urlParams.get('pin');
+            if (queryPin && /^\d{6}$/.test(queryPin)) {
+                setTargetPin(queryPin);
+                console.log('PIN detectado en query:', queryPin);
+            }
         }
     }, []);
 
@@ -182,6 +201,43 @@ export default function ChatApp() {
         }
     };
 
+    const sharePin = async () => {
+        if (!myPin) return;
+
+        const deepLink = `${window.location.origin}/${myPin}`;
+        const shareText = `🕵️ Conéctate conmigo en Chat Spy!\n\nMi PIN: ${myPin}\n\nEnlace directo: ${deepLink}`;
+
+        // Try Web Share API (mobile)
+        if (navigator.share) {
+            try {
+                await navigator.share({
+                    title: 'Mi PIN de Chat Spy',
+                    text: shareText
+                });
+            } catch (err) {
+                if (err.name !== 'AbortError') {
+                    // Fallback to copy
+                    navigator.clipboard.writeText(shareText);
+                    alert('PIN copiado al portapapeles!');
+                }
+            }
+        } else {
+            // Fallback to copy
+            navigator.clipboard.writeText(shareText);
+            alert('PIN copiado al portapapeles! Compártelo con tus amigos.');
+        }
+    };
+
+    const shareWhatsApp = () => {
+        if (!myPin) return;
+
+        const deepLink = `${window.location.origin}/${myPin}`;
+        const message = `🕵️ Conéctate conmigo en Chat Spy!\n\nMi PIN: *${myPin}*\n\nEnlace directo: ${deepLink}`;
+        const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+
+        window.open(whatsappUrl, '_blank');
+    };
+
     // --- Renders ---
 
     return (
@@ -197,10 +253,19 @@ export default function ChatApp() {
                     <h1 className="text-4xl font-mono font-bold tracking-[0.2em] text-white drop-shadow-lg">
                         {myPin || '...'}
                     </h1>
-                    <button onClick={copyPin} className="p-2 hover:bg-white/10 rounded-full transition-colors">
-                        {copied ? <Check size={20} className="text-green-400" /> : <Copy size={20} className="text-slate-400" />}
-                    </button>
+                    <div className="flex gap-2">
+                        <button onClick={copyPin} className="p-2 hover:bg-white/10 rounded-full transition-colors" title="Copiar PIN">
+                            {copied ? <Check size={20} className="text-green-400" /> : <Copy size={20} className="text-slate-400" />}
+                        </button>
+                        <button onClick={shareWhatsApp} className="p-2 hover:bg-green-600/20 rounded-full transition-colors" title="Compartir por WhatsApp">
+                            <MessageCircle size={20} className="text-green-400" />
+                        </button>
+                        <button onClick={sharePin} className="p-2 hover:bg-white/10 rounded-full transition-colors" title="Compartir">
+                            <Share2 size={20} className="text-blue-400" />
+                        </button>
+                    </div>
                 </div>
+                <p className="text-xs text-slate-400 mt-2">Comparte tu PIN para recibir mensajes</p>
             </div>
 
             {/* Error Toast */}
