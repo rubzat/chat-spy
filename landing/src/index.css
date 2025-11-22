@@ -83,6 +83,41 @@ button {
   }
 }
 
+@keyframes pulse {
+
+  0%,
+  100% {
+    box-shadow: 0 4px 14px 0 var(--accent-glow);
+  }
+
+  50% {
+    box-shadow: 0 6px 24px 0 var(--accent-glow);
+  }
+}
+
+@keyframes float {
+
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
 .animate-fade-in {
   animation: fadeIn 0.8s ease-out forwards;
+}
+
+.btn-pulse {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.btn-secondary:hover {
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
 }

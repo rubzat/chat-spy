@@ -1,0 +1,8 @@
+# robots.txt for Chat Spy Landing Page
+
+# Allow all crawlers to index the site
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://chatspy.vercel.app/sitemap.xml

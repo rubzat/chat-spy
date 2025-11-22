@@ -1,8 +1,23 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Shield, Sparkles } from 'lucide-react';
 
 const Hero = ({ t }) => {
+    const [particles, setParticles] = useState([]);
+
+    useEffect(() => {
+        // Generate particles only on client side
+        const newParticles = [...Array(20)].map((_, i) => ({
+            id: i,
+            x: Math.random() * 100,
+            y: Math.random() * 100,
+            size: Math.random() * 4 + 2,
+            duration: Math.random() * 3 + 2,
+            delay: Math.random() * 2,
+            color: i % 2 === 0 ? 'var(--accent-primary)' : 'var(--accent-secondary)'
+        }));
+        setParticles(newParticles);
+    }, []);
     return (
         <section className="hero section-padding" style={{ minHeight: '90vh', display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
             <div className="container">
@@ -87,30 +102,30 @@ const Hero = ({ t }) => {
 
             {/* Animated Background Particles */}
             <div className="particles">
-                {[...Array(20)].map((_, i) => (
+                {particles.map((particle) => (
                     <motion.div
-                        key={i}
+                        key={particle.id}
                         className="particle"
                         initial={{
-                            x: Math.random() * window.innerWidth,
-                            y: Math.random() * window.innerHeight,
+                            x: `${particle.x}vw`,
+                            y: `${particle.y}vh`,
                             opacity: 0
                         }}
                         animate={{
-                            y: [null, Math.random() * -100 - 50],
+                            y: [`${particle.y}vh`, `${particle.y - 10}vh`],
                             opacity: [0, 0.6, 0]
                         }}
                         transition={{
-                            duration: Math.random() * 3 + 2,
+                            duration: particle.duration,
                             repeat: Infinity,
-                            delay: Math.random() * 2,
+                            delay: particle.delay,
                             ease: "easeInOut"
                         }}
                         style={{
                             position: 'absolute',
-                            width: Math.random() * 4 + 2 + 'px',
-                            height: Math.random() * 4 + 2 + 'px',
-                            background: i % 2 === 0 ? 'var(--accent-primary)' : 'var(--accent-secondary)',
+                            width: `${particle.size}px`,
+                            height: `${particle.size}px`,
+                            background: particle.color,
                             borderRadius: '50%',
                             filter: 'blur(1px)',
                             zIndex: -1
