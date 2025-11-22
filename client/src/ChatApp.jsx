@@ -19,6 +19,7 @@ export default function ChatApp() {
     // New chat state
     const [targetPin, setTargetPin] = useState('');
     const [incomingPin, setIncomingPin] = useState('');
+    const [waitingResponse, setWaitingResponse] = useState(false); // Waiting for chat acceptance
 
     // UI state
     const [error, setError] = useState('');
@@ -93,12 +94,14 @@ export default function ChatApp() {
             setView('LIST');
             setTargetPin('');
             setIncomingPin('');
+            setWaitingResponse(false); // Clear waiting state
         });
 
         socket.on('chat_rejected', () => {
             setError('Solicitud rechazada.');
             setTimeout(() => setError(''), 3000);
             setView('LIST');
+            setWaitingResponse(false); // Clear waiting state
         });
 
         socket.on('receive_message', ({ roomId, message }) => {
@@ -170,6 +173,8 @@ export default function ChatApp() {
             return;
         }
         socket.emit('request_chat', targetPin);
+        setWaitingResponse(true); // Set waiting state
+        setView('WAITING'); // Change to waiting view
     };
 
     const handleAcceptChat = () => {
@@ -453,6 +458,40 @@ export default function ChatApp() {
                                     </div>
                                 )}
                             </div>
+                        </motion.div>
+                    )}
+
+                    {view === 'WAITING' && (
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            className="flex-1 flex flex-col justify-center items-center p-4 md:p-8"
+                        >
+                            <div className="relative">
+                                <MessageCircle size={48} className="md:hidden text-emerald-400 mb-4 animate-pulse" />
+                                <MessageCircle size={64} className="hidden md:block text-emerald-400 mb-4 animate-pulse" />
+                                <div className="absolute inset-0 animate-ping">
+                                    <MessageCircle size={48} className="md:hidden text-emerald-400/30" />
+                                    <MessageCircle size={64} className="hidden md:block text-emerald-400/30" />
+                                </div>
+                            </div>
+                            <h2 className="text-xl md:text-2xl font-bold mb-2">Esperando Respuesta...</h2>
+                            <p className="text-slate-400 mb-6 text-center">
+                                Solicitud enviada a PIN: <span className="font-mono text-white text-lg md:text-xl">{targetPin}</span>
+                            </p>
+                            <p className="text-sm text-slate-500 text-center max-w-sm">
+                                Esperando a que el usuario acepte tu solicitud de chat
+                            </p>
+                            <button
+                                onClick={() => {
+                                    setView('LIST');
+                                    setWaitingResponse(false);
+                                    setTargetPin('');
+                                }}
+                                className="mt-6 px-6 py-3 bg-slate-700 hover:bg-slate-600 rounded-xl font-medium transition-colors"
+                            >
+                                Cancelar
+                            </button>
                         </motion.div>
                     )}
 
