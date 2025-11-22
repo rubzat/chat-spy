@@ -7,7 +7,7 @@ import LanguageSwitcher from './components/LanguageSwitcher';
 import { translations } from './translations';
 
 function App() {
-  const [lang, setLang] = useState('en');
+  const [lang, setLang] = useState('es');
 
   const toggleLang = () => {
     setLang(prev => prev === 'en' ? 'es' : 'en');
