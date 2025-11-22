@@ -7,7 +7,7 @@ import ChatList from './components/ChatList';
 import ChatView from './components/ChatView';
 
 // Connect to backend
-const socket = io('http://localhost:3001');
+const socket = io('https://chat-spy.onrender.com');
 
 export default function ChatApp() {
     const [myPin, setMyPin] = useState(null);
