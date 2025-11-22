@@ -62,7 +62,7 @@ export const translations = {
             titleLine1: "Chatea Libremente.",
             titleLine2: "Desaparece Completamente.",
             description: "La aplicación de chat secreto definitiva. Los mensajes desaparecen después de 1 minuto. Sin registros, sin rastros, solo privacidad pura.",
-            ctaPrimary: "Obtener la App",
+            ctaPrimary: "Conoce tu PIN",
             ctaSecondary: "Más Información"
         },
         features: {
