@@ -10,7 +10,7 @@ const server = http.createServer(app);
 // CORS configuration
 const allowedOrigins = process.env.CORS_ORIGIN
   ? process.env.CORS_ORIGIN.split(',')
-  : ['http://localhost:5173', 'http://localhost:5174'];
+  : ['http://localhost:5173', 'https://chat-spy.vercel.app', 'https://chat-spy-xmh4.vercel.app'];
 
 app.use(cors({ origin: allowedOrigins }));
 
