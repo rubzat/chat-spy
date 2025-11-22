@@ -26,6 +26,17 @@ body {
         linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
         linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
     background-size: 100% 100%, 20px 20px, 20px 20px;
+
+    /* Screenshot prevention attempts */
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+/* Disable right-click context menu */
+body {
+    -webkit-touch-callout: none;
 }
 
 /* Custom classes */
@@ -49,4 +60,21 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
     background: #475569;
+}
+
+/* Security watermark overlay - makes screenshots less useful */
+#root::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 9999;
+    background-image: repeating-linear-gradient(45deg,
+            transparent,
+            transparent 100px,
+            rgba(255, 0, 0, 0.02) 100px,
+            rgba(255, 0, 0, 0.02) 200px);
 }

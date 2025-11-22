@@ -18,12 +18,34 @@ export default function ChatApp() {
     const [messages, setMessages] = useState([]);
     const [error, setError] = useState('');
     const [copied, setCopied] = useState(false);
+    const [savedContacts, setSavedContacts] = useState([]);
+    const [showContacts, setShowContacts] = useState(false);
     const messagesEndRef = useRef(null);
+
+    // Load saved PIN from localStorage on mount
+    useEffect(() => {
+        const savedPin = localStorage.getItem('chatSpyPin');
+        if (savedPin) {
+            setMyPin(savedPin);
+            console.log('PIN restaurado desde localStorage:', savedPin);
+        }
+
+        // Load saved contacts
+        const contacts = localStorage.getItem('chatSpyContacts');
+        if (contacts) {
+            setSavedContacts(JSON.parse(contacts));
+        }
+    }, []);
 
     useEffect(() => {
         socket.on('connect', () => console.log('Connected'));
 
-        socket.on('pin_assigned', (pin) => setMyPin(pin));
+        socket.on('pin_assigned', (pin) => {
+            setMyPin(pin);
+            // Save PIN to localStorage
+            localStorage.setItem('chatSpyPin', pin);
+            console.log('PIN guardado en localStorage:', pin);
+        });
 
         // --- Request Flow ---
         socket.on('incoming_request', ({ fromPin }) => {
@@ -92,6 +114,25 @@ export default function ChatApp() {
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages]);
+
+    // --- Contact Management ---
+    const saveContact = (pin, name = '') => {
+        const contactName = name || prompt('Nombre para este contacto (opcional):') || `Contacto ${pin}`;
+        const newContact = { pin, name: contactName, savedAt: Date.now() };
+        const updatedContacts = [...savedContacts.filter(c => c.pin !== pin), newContact];
+        setSavedContacts(updatedContacts);
+        localStorage.setItem('chatSpyContacts', JSON.stringify(updatedContacts));
+    };
+
+    const deleteContact = (pin) => {
+        const updatedContacts = savedContacts.filter(c => c.pin !== pin);
+        setSavedContacts(updatedContacts);
+        localStorage.setItem('chatSpyContacts', JSON.stringify(updatedContacts));
+    };
+
+    const isContactSaved = (pin) => {
+        return savedContacts.some(c => c.pin === pin);
+    };
 
     // --- Actions ---
 
@@ -200,6 +241,62 @@ export default function ChatApp() {
                                 INICIAR ENLACE
                             </button>
                         </form>
+
+                        {/* Saved Contacts Section */}
+                        {savedContacts.length > 0 && (
+                            <div className="mt-6">
+                                <button
+                                    onClick={() => setShowContacts(!showContacts)}
+                                    className="w-full text-sm text-slate-400 hover:text-white transition-colors flex items-center justify-center gap-2 mb-3"
+                                >
+                                    <Shield size={16} />
+                                    Contactos Guardados ({savedContacts.length})
+                                    <span className="text-xs">{showContacts ? '▲' : '▼'}</span>
+                                </button>
+
+                                <AnimatePresence>
+                                    {showContacts && (
+                                        <motion.div
+                                            initial={{ height: 0, opacity: 0 }}
+                                            animate={{ height: 'auto', opacity: 1 }}
+                                            exit={{ height: 0, opacity: 0 }}
+                                            className="space-y-2 overflow-hidden"
+                                        >
+                                            {savedContacts.map((contact) => (
+                                                <div
+                                                    key={contact.pin}
+                                                    className="bg-slate-800/50 border border-slate-700 rounded-lg p-3 flex items-center justify-between"
+                                                >
+                                                    <div className="flex-1">
+                                                        <div className="font-medium text-sm">{contact.name}</div>
+                                                        <div className="font-mono text-xs text-slate-400">{contact.pin}</div>
+                                                    </div>
+                                                    <div className="flex gap-2">
+                                                        <button
+                                                            onClick={() => {
+                                                                setTargetPin(contact.pin);
+                                                                setShowContacts(false);
+                                                            }}
+                                                            className="p-2 bg-emerald-600 hover:bg-emerald-500 rounded-lg transition-colors"
+                                                            title="Conectar"
+                                                        >
+                                                            <Phone size={16} />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => deleteContact(contact.pin)}
+                                                            className="p-2 bg-red-600/20 hover:bg-red-600/40 text-red-400 rounded-lg transition-colors"
+                                                            title="Eliminar"
+                                                        >
+                                                            <X size={16} />
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                            </div>
+                        )}
                     </div>
                 </motion.div>
             )}
@@ -268,13 +365,24 @@ export default function ChatApp() {
                             <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
                             <span className="text-sm text-slate-400">Conectado con: <span className="font-mono text-white font-bold">{activeChatPin}</span></span>
                         </div>
-                        <button
-                            onClick={endChat}
-                            className="p-2 hover:bg-red-500/10 text-slate-400 hover:text-red-400 rounded-lg transition-colors"
-                            title="Finalizar Chat"
-                        >
-                            <LogOut size={18} />
-                        </button>
+                        <div className="flex gap-2">
+                            {!isContactSaved(activeChatPin) && (
+                                <button
+                                    onClick={() => saveContact(activeChatPin)}
+                                    className="p-2 hover:bg-emerald-500/10 text-emerald-400 rounded-lg transition-colors"
+                                    title="Guardar Contacto"
+                                >
+                                    <Shield size={18} />
+                                </button>
+                            )}
+                            <button
+                                onClick={endChat}
+                                className="p-2 hover:bg-red-500/10 text-slate-400 hover:text-red-400 rounded-lg transition-colors"
+                                title="Finalizar Chat"
+                            >
+                                <LogOut size={18} />
+                            </button>
+                        </div>
                     </div>
 
                     {/* Messages */}
